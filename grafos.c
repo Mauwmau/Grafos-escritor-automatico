@@ -223,7 +223,7 @@ void arestaRemove(GRAFO *g, int origem, int destino) {
 
 //Tentar Djikstra
 void Djokstra(GRAFO *g, int vertInicial, int vertFim){
-
+    char[50][50] reves;
     if(g->qtdVertices < 1){
         if (DEBUG) printf("Erro, não há vertices suficientes para realizar a ação!");
         return;
@@ -284,9 +284,15 @@ void Djokstra(GRAFO *g, int vertInicial, int vertFim){
 
     printf("%s[%d] ->",g->vertices[vertFim].palavra, vertFim);
     int eu = antecessor[vertFim];
+    int cont = 0;
     while(eu != -1){
-        printf("%s[%d] ->",g->vertices[eu].palavra, eu);
+        sprintf(reves[cont],"%s"g->vertices[eu].palavra);
         eu = antecessor[eu];
+        cont++;
+    }
+    for ( i = reves-1; i > -1; i--)
+    {
+        printf("%s ",reves[i]);
     }
 
     free(antecessor);

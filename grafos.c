@@ -239,19 +239,19 @@ void Djokstra(GRAFO *g, int vertInicial, int vertFim){
         return;
     }
 
-    printf("qtd de vertices: %d\n", g->qtdVertices);
-
     int *antecessor = (int*)malloc(g->qtdVertices * sizeof(int));
     int *distancia = (int*)malloc(g->qtdVertices * sizeof(int));
 
     antecessor[vertInicial] = vertInicial;
 
     for(int i = 0; i < g->qtdVertices; i++){
-        distancia[i] = ValorBemGrande;
+        distancia[i] = 0;
+        antecessor[i] = -2;
     }
 
     distancia[vertInicial] = 0;
     antecessor[vertInicial] = -1;
+
 
     LISTA* lista = ListaCria();
     ListaInsere(lista, vertInicial, 0);
@@ -259,20 +259,22 @@ void Djokstra(GRAFO *g, int vertInicial, int vertFim){
 
     while(!ListaVazia(lista)){
         int atual = ListaRemove(lista);
-        int pesoComparacao = 100;
+        int pesoComparacao;
 
         ARESTA* aresta = g->vertices[atual].ini->prox;
         while (aresta != NULL){
-            pesoComparacao = MaxNumVert - aresta->peso;
+            pesoComparacao = /*10 -*/ aresta->peso;
 
-            if(g->vertices[aresta->vizinho].cor == BRANCO){
-                g->vertices[aresta->vizinho].cor = CINZA;
-                ListaInsere(lista, aresta->vizinho, pesoComparacao);
-            }
+            if (g->vertices[aresta->vizinho].cor != PRETO) {
+                if(g->vertices[aresta->vizinho].cor == BRANCO){
+                    g->vertices[aresta->vizinho].cor = CINZA;
+                    ListaInsere(lista, aresta->vizinho, pesoComparacao);
+                }
 
-            if(distancia[aresta->vizinho] > distancia[atual] + pesoComparacao){
-                distancia[aresta->vizinho] = distancia[atual] + pesoComparacao;
-                antecessor[aresta->vizinho] = atual;
+                if(distancia[aresta->vizinho] < distancia[atual] + pesoComparacao){
+                    distancia[aresta->vizinho] = distancia[atual] + pesoComparacao;
+                    antecessor[aresta->vizinho] = atual;
+                }
             }
 
             aresta = aresta->prox;
@@ -282,12 +284,42 @@ void Djokstra(GRAFO *g, int vertInicial, int vertFim){
     }
     ListaApaga(lista);
 
-    printf("%s[%d] ->",g->vertices[vertFim].palavra, vertFim);
+    if (DEBUG) {
+        for (int j = 0; j < g->qtdVertices; ++j) {
+            printf("distancia[%d] = %d\tantecessor[%d] = %d\n", j, distancia[j], j, antecessor[j]);
+        }
+        printf("\n");
+    }
+
+    int *arrumaOrdem;
+    int qtdNoCaminho = 1;
+
+    arrumaOrdem = (int*) malloc(sizeof(int));
+
+    //printf("%s[%d] ->",g->vertices[vertFim].palavra, vertFim);
+
+    arrumaOrdem[0] = vertFim;
+
     int eu = antecessor[vertFim];
     while(eu != -1){
-        printf("%s[%d] ->",g->vertices[eu].palavra, eu);
+
+        qtdNoCaminho++;
+        arrumaOrdem = (int*) realloc(arrumaOrdem, qtdNoCaminho * sizeof(int));
+
+        arrumaOrdem[qtdNoCaminho-1] = eu;
+
+        //printf("%s[%d] ->",g->vertices[eu].palavra, eu);
         eu = antecessor[eu];
     }
+
+    //printf("\n");
+
+
+    for (int i = qtdNoCaminho-2; i >= 0 ; i--) {
+        printf("%s ", g->vertices[arrumaOrdem[i]].palavra);
+    }
+
+    free(arrumaOrdem);
 
     free(antecessor);
     free(distancia);

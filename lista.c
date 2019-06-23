@@ -73,7 +73,7 @@ void ListaInsere(LISTA *lista, int id, int valor) {
     no->prox = NULL;
 
     NO* aux = lista->cabeca;
-    while (aux->prox != NULL && (aux->prox->toCompare < no->toCompare)){
+    while (aux->prox != NULL && (aux->prox->toCompare > no->toCompare)){
         aux = aux->prox;
     }
 

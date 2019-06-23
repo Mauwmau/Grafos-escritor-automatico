@@ -10,7 +10,6 @@
 
 //Numeros
 #define MaxNumVert 500
-#define ValorBemGrande 100000
 
 //Caracteres
 #define TRASH '@'

@@ -12,6 +12,12 @@
 #define INICIO ".ini"
 #define FIM "."
 
+
+/* Função que delasoca memória de um vetor de strings passado por parâmetro (frase) de tamanho (qtd)
+ *  @parametros
+ *      char ***frase - ponteiro de um vetor de strings que será desalocado
+ *      int qtd - quantidade de strings existentes no vetor
+ */
 void limpaFrase(char ***frase, int qtd){
     char **fr = *frase;
 
@@ -21,6 +27,17 @@ void limpaFrase(char ***frase, int qtd){
     free(fr);
 }
 
+
+/* Função que lê uma frase de um arquivo (file) e o armazena as (qtd) palavras em um vetor de strings (fr) passado como parametro
+ *  @parametros
+ *      FILE *file - arquivo de texto a ser lido
+ *      char ***fr - ponteiro para um vetors de strings que será alocado e armazenará as palavras
+ *      int *qtd - ponteiro para um int que receberá a quantidade de palavras lidas no arquivo
+ *
+ *  @retorno
+ *      1 - foi possivel ler algo no arquivo
+ *      0 - não foi possivel ler do arquivo, provavelmente chegou em EOF
+ */
 int getInput(FILE* file, char ***fr, int* qtd){
     int continuarLendo = 1;
 
@@ -61,6 +78,11 @@ int getInput(FILE* file, char ***fr, int* qtd){
 }
 
 
+/* Função que lê frases da entrada padrão e armazena as (qtd) palavras em um vetor de strings
+ *  @parametros
+ *      char ***fr - ponteiro para o vetor de strings que armazenará as palavras lidas na saída padrão
+ *      int *qtd - ponteiro para um inteiro que armazenará a quantida de palavras lidas
+ */
 void getFrase(char ***fr, int *qtd){
     char **frase = (char**) malloc(sizeof(char*));
 
@@ -98,6 +120,14 @@ void getFrase(char ***fr, int *qtd){
 }
 
 
+/* Função que insere vertices e arestas em um grafo (g) conforme as palavras armazenadas em um vetor de strings (frase) de tamanho (qtdPalavra)
+ * Insere de forma que todas as palavras sao inseridas como vértices e a palavra logo após é usada para inserir como uma aresta
+ * Exemplo de arestas inseridas: palavra[0] -> palavra[1], palvra[i]->palavra[i+1], palavra[qtdPalavra-2]->palavra[qtdPalavra-1]
+ *  @parametros
+ *      GRAFO* g - grafo em que os vértices e arestas serão inseridos
+ *      char **frase - vetor de strings, cujos valores serão usados para inserir vetores e arestas no grafo
+ *      int qtdpalavra - tamanho do vetor de strings
+ */
 void putInGrafo(GRAFO* g, char** frase, int qtdPalavra){
     for(int i = 0; i < qtdPalavra; i++){
         verticeInsere(g, frase[i]);
@@ -112,6 +142,11 @@ void putInGrafo(GRAFO* g, char** frase, int qtdPalavra){
     }
 }
 
+
+/* Função que lê todas as frases de um arquivo e já usa as palavras lidas para inserir os vértices e arestas em um grafo (g)
+ *  @parametros
+ *      GRAFO* g - grafo em que as palavras serão usadas para inserir vértices e arestas
+*/
 void readFile(GRAFO* g){
     FILE* fp = fopen("textinput.txt", "r");
     if(fp == NULL){
@@ -135,6 +170,12 @@ void readFile(GRAFO* g){
     fclose(fp);
 }
 
+
+/* Função que usa o escreve novas frases escritas pelo usuário no arquivo de base para a formação do grafo inicial
+ *  @parametros
+ *      char ***fr - ponteiro para vetor de strings que armazena as palavras escritas pelo usuário
+ *      qtdpalavra - quantida de palavras na frase escrita pelo usuario
+ */
 void updateFile(char ***fr, int qtdPalavra){
     char **frase = *fr;
 
@@ -157,23 +198,34 @@ void updateFile(char ***fr, int qtdPalavra){
 
 int main() {
 
+    /* Cria o grafo e já insere dois vértice muito importantes, o de inicio da frase e o de fim da frase*/
     GRAFO* g = grafoCria();
     verticeInsere(g, INICIO);
     verticeInsere(g, FIM);
 
+    /* Declaração da variáveis que mais serão usadas, o vetor de strings e a quantidade de strings no vetor*/
     char** frase;
     int qtdPalavra;
 
-
+    /* Lê um arquivo e constrói um grafo inicial baseado nas frases do arquivo*/
     readFile(g);
 
-    //grafoPrint(g);
-
+    /* Laço de repetição principal, pede para o usuário digitar algo, tenta corrigir ou completar a frase
+     * se errar pede para que o usuário digite a frase corretamente e atualiza o grafo*/
     int repete = 1;
     while (repete) {
+        
+        // Pega uma frase da entrada padrão e guarda em (frase)
         printf("Digite uma frase\n>\t");
         getFrase(&frase, &qtdPalavra);
+
+
+        /* Se a palavra lida for não apenas uma quebra de linha (ou seja, o usuário digitou nenhuma palavra) realize as ações normalente
+         * caso contrario, apenas desaloca o vetor de strings e nao permite repeticao*/
         if (frase[0][0] != '\n') {
+
+            /* Tenta corrigir ou completar o que o usuário digitou por meio de algoritmos de caminho mínimo entra cada palavra digita
+             * considera tambem o caminho minimo do vertice de inicio à primeira palavra digitada e o da ultima palavra digitada com o vertice de fim*/
             printf("\nVoce quis dizer:\t");
             for (int i = 0; i < qtdPalavra; i++) {
                 int j = i + 1;
@@ -184,10 +236,13 @@ int main() {
             printf("\n\n[s/n]");
             limpaFrase(&frase, qtdPalavra);
 
+            /* Lê uma char pra indicar se o corretor funcionou corretamente, sendo que 'n' significa que não*/
             char opcao;
             opcao = (char) getchar();
             getchar(); // Ignora um \n q ta atrapalhando aqui
 
+            /* Em caso de o corretor ter errado, pede para que o usuário escreva o que realmente desejava e insere a frase no grafo,
+             * atualizando também o arquivo de base para a criação do grafo*/
             if (opcao == 'n') {
                 printf("Favor corrigir a frase\n> ");
                 getFrase(&frase, &qtdPalavra);
